@@ -28,13 +28,12 @@ jobs:
               text = path.read_text(encoding='utf-8')
               changed_here = False
               if path.parent.name == 'recipes':
-                  markers = ['<script src="../recipe-content.js"></script>','<script src="../recipe-card-labels.js"></script>']
-                  if markers[0] not in text:
-                      text = text.replace('</body>', markers[0] + '</body>'); changed_here = True
-                  if markers[1] not in text:
-                      text = text.replace('</body>', markers[1] + '</body>'); changed_here = True
+                  markers = ['<script src="../recipe-images.js"></script>','<script src="../recipe-content.js"></script>','<script src="../recipe-card-labels.js"></script>']
+                  for marker in markers:
+                      if marker not in text:
+                          text = text.replace('</body>', marker + '</body>'); changed_here = True
               elif path.as_posix() == 'ur/recipe.html':
-                  markers = ['<script src="../recipe-content.js"></script>','<script src="./recipe-tips.js"></script>','<script src="../recipe-card-labels.js"></script>']
+                  markers = ['<script src="../recipe-images.js"></script>','<script src="../recipe-content.js"></script>','<script src="./recipe-tips.js"></script>','<script src="../recipe-card-labels.js"></script>']
                   for marker in markers:
                       if marker not in text:
                           text = text.replace('</body>', marker + '</body>'); changed_here = True
@@ -60,5 +59,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add recipes/*.html ur/recipe.html index.html ur/index.html
           if git diff --cached --quiet; then echo "No page changes required."; exit 0; fi
-          git commit -m "Add recipe names and exact recipe URLs to image blocks"
+          git commit -m "Add recipe image loader to all recipe pages"
           git push
