@@ -15,7 +15,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Inject recipe content and image renderer
+      - name: Inject recipe content, images and recipe labels
         shell: bash
         run: |
           python3 - <<'PY'
@@ -28,32 +28,28 @@ jobs:
               text = path.read_text(encoding='utf-8')
               changed_here = False
               if path.parent.name == 'recipes':
-                  marker = '<script src="../recipe-content.js"></script>'
-                  if marker not in text:
-                      text = text.replace('</body>', marker + '</body>')
-                      changed_here = True
+                  markers = ['<script src="../recipe-content.js"></script>','<script src="../recipe-card-labels.js"></script>']
+                  if markers[0] not in text:
+                      text = text.replace('</body>', markers[0] + '</body>'); changed_here = True
+                  if markers[1] not in text:
+                      text = text.replace('</body>', markers[1] + '</body>'); changed_here = True
               elif path.as_posix() == 'ur/recipe.html':
-                  marker = '<script src="../recipe-content.js"></script>'
-                  tips = '<script src="./recipe-tips.js"></script>'
-                  if marker not in text:
-                      text = text.replace('</body>', marker + '</body>')
-                      changed_here = True
-                  if tips not in text:
-                      text = text.replace('</body>', tips + '</body>')
-                      changed_here = True
+                  markers = ['<script src="../recipe-content.js"></script>','<script src="./recipe-tips.js"></script>','<script src="../recipe-card-labels.js"></script>']
+                  for marker in markers:
+                      if marker not in text:
+                          text = text.replace('</body>', marker + '</body>'); changed_here = True
               elif path.as_posix() == 'index.html':
-                  marker = '<script src="recipe-images.js"></script>'
-                  if marker not in text:
-                      text = text.replace('</body>', marker + '</body>')
-                      changed_here = True
+                  markers = ['<script src="recipe-images.js"></script>','<script src="recipe-card-labels.js"></script>']
+                  for marker in markers:
+                      if marker not in text:
+                          text = text.replace('</body>', marker + '</body>'); changed_here = True
               elif path.as_posix() == 'ur/index.html':
-                  marker = '<script src="../recipe-images.js"></script>'
-                  if marker not in text:
-                      text = text.replace('</body>', marker + '</body>')
-                      changed_here = True
+                  markers = ['<script src="../recipe-images.js"></script>','<script src="../recipe-card-labels.js"></script>']
+                  for marker in markers:
+                      if marker not in text:
+                          text = text.replace('</body>', marker + '</body>'); changed_here = True
               if changed_here:
-                  path.write_text(text, encoding='utf-8')
-                  changed.append(str(path))
+                  path.write_text(text, encoding='utf-8'); changed.append(str(path))
           print('Injected:', ', '.join(changed) if changed else 'none')
           PY
 
@@ -63,9 +59,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add recipes/*.html ur/recipe.html index.html ur/index.html
-          if git diff --cached --quiet; then
-            echo "No page changes required."
-            exit 0
-          fi
-          git commit -m "Prepare recipe image loading across all pages"
+          if git diff --cached --quiet; then echo "No page changes required."; exit 0; fi
+          git commit -m "Add recipe names and exact recipe URLs to image blocks"
           git push
